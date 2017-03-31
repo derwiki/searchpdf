@@ -3,11 +3,13 @@ require 'log_helper'
 
 module GoogleCloudVision
   class OcrPdfService
+    include LogHelper
     attr_accessor :pdf_filename
 
     def initialize(pdf_filename)
-      fail "GOOGLE_CLOUD_KEYFILE env variable required" unless ENV['GOOGLE_CLOUD_KEYFILE']
+      self.validate_env_variables!
       fail "Input must be PDF" unless pdf_filename&.split('.')&.last&.downcase == 'pdf'
+
       self.pdf_filename = pdf_filename
       log :page_count, self.page_count
     end
@@ -40,6 +42,15 @@ module GoogleCloudVision
     end
 
     protected
+
+      REQUIRED_ENV_VARIABLES =
+        %w(GOOGLE_APPLICATION_CREDENTIALS GOOGLE_CLOUD_KEYFILE GOOGLE_CLOUD_PROJECT_ID)
+
+      def validate_env_variables!
+        REQUIRED_ENV_VARIABLES.each do |key|
+          fail "#{key} ENV variable required" unless ENV[key]
+        end
+      end
 
       def page_count
         @page_count ||= `gs -q -dNODISPLAY -c "(#{self.pdf_filename}) (r) file runpdfbegin pdfpagecount = quit";`.to_i
