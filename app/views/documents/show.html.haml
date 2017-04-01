@@ -1,0 +1,12 @@
+%p#notice= notice
+
+%p
+  %b Filename:
+  = @document.filename
+
+  - @document.document_pages.each do |page|
+    %blockquote= page.text
+
+= link_to 'Edit', edit_document_path(@document)
+\|
+= link_to 'Back', documents_path
